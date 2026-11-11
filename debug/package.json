@@ -4,7 +4,7 @@
     "start": "node main.ts"
   },
   "dependencies": {
-    "create-typescript-npm-library": "file:../dist"
+    "n8nlift": "file:../dist"
   },
   "type": "module"
 }

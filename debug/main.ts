@@ -1,6 +1,4 @@
-import { type HttpMessage, message } from 'create-typescript-npm-library';
+import { runCli } from 'n8nlift';
 
-console.log('hello !');
-message();
-const test: HttpMessage = {} as HttpMessage;
-console.log(test);
+const result = runCli(['--help'], '0.0.0');
+process.stdout.write(result.stdout);

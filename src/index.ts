@@ -1,5 +1,5 @@
 // Functions
-export * from '@/functions/hello';
+export * from '@/functions/run-cli';
 
 // Models
-export * from '@/models/hello.model';
+export * from '@/models/cli.model';
