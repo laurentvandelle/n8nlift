@@ -1,70 +1,52 @@
-# create-typescript-npm-library
+# n8nlift
 
-Simple typescript app with vitest to create a npm library with types
+**Code is the source. n8n is the runtime.**
 
-## Installation
+Write n8n workflows in TypeScript, test them like any other code, and lift them from dev to prod.
 
-```sh
-npx degit https://github.com/laurentvandelle/create-typescript-npm-library app
-```
+n8nlift is a command-line tool for people who want their n8n workflows to live in Git, not only in the editor. You build workflows from typed node factories and reusable blocks, run unit tests, then deploy to your n8n instance. Updates land as drafts, so the published version keeps running until you choose to publish.
 
-## Getting started
+## Why n8nlift
 
-1. Install nodejs : https://nodejs.org/en/
+- **Typed building blocks.** One factory per node and reusable subgraphs, no raw JSON pasted by hand.
+- **Tested before shipped.** Workflows are plain TypeScript: lint, typecheck and test them in CI.
+- **Safe delivery.** Deploy as draft, review, then publish. Requires n8n 2.35.0 or later.
+- **Built for AI coding agents.** Agents edit code and run the CLI instead of calling the n8n API directly.
+- **Your instance, your rules.** n8nlift talks to your own n8n instance through its public API. Nothing is hosted for you.
 
-2. Install node_modules with `npm install`
-
-3. Rename the package: set `name`, `description`, `author` and `repository` in `package.json`
-
-4. Available commands with `npm run` (`npm start` builds, then runs `debug/main.ts` against `dist/`)
-
-## Running Tests
-
-To run the tests for your library, use the following command:
+## Install
 
 ```sh
-npm run test
+npm install -g n8nlift
 ```
 
-This will execute all test files using Vitest (`npm run test:watch` for watch mode).
+Requires Node.js 24 or later.
 
-## Publish your library
+## Quick start
 
-To publish your library to npm, use the following command:
+> To be confirmed once the commands are migrated.
 
 ```sh
-npm run pub
+n8nlift --help     # list the available commands
+n8nlift --version  # print the installed version
 ```
 
-This bumps the patch version, then `prepublishOnly` runs `npm run verify` and `npm run build` before publishing. Only `dist/` is published (see `files` in `package.json`). Ensure you are logged into npm (`npm login`).
+## Status
 
-## Folder tree
+Early stage, best-effort support. Multi-environment support (dev, staging, prod), plan and drift detection are on the roadmap.
 
+> n8nlift is an independent open source project. It is not affiliated with, endorsed by, or sponsored by n8n GmbH.
+
+## Development
+
+```sh
+npm install
+npm run verify   # lint, typecheck, tests
+npm run build    # compile into dist/
 ```
-|   eslint.config.mts
-|   .gitignore
-|   vitest.config.mts
-|   LICENSE
-|   package-lock.json
-|   package.json
-|   README.md
-|   tsconfig.json
-|   tsconfig.build.json
-|
-+---debug
-    +---main.ts
-    +---package-lock.json
-    +---package.json
-|
-+---src
-|   +---functions
-        hello.test.ts
-        hello.ts
-    +---libs
-        .gitkeep
-    +---models
-        hello.model.ts
-|
-+---docs
-    +---adr
-```
+
+`npm start` builds, then runs `debug/main.ts` against `dist/` as an external consumer would.
+
+## License
+
+[MIT](LICENSE)

@@ -4,10 +4,11 @@ Operational rules for agents live in `AGENTS.md`. This file is background.
 
 ## Intent
 
-A starter for an npm library written in TypeScript that ships its own type declarations. Users clone it with `degit` and replace the sample `hello` code.
+`n8nlift` is a command-line tool, written in TypeScript and published to npm with its own type declarations, that turns n8n workflows written as code into deployments on the user's n8n instance. For now it only has `--help` and `--version`. The real commands come in later work.
 
 ## Modules
 
+- `src/bin.ts` — the `n8nlift` executable (`bin` in `package.json`). Reads the version from `package.json` and hands `process.argv` to `runCli`.
 - `src/index.ts` — the package entry point. Re-exports everything public.
 - `src/functions/` — exported functions.
 - `src/models/` — exported types.

@@ -4,7 +4,7 @@ Instructions for every coding agent. Humans read `README.md` and `ARCHITECTURE.m
 
 ## Role
 
-This repository is a template for publishing a TypeScript library to npm with type declarations. Library code lives in `src/` and is exported through `src/index.ts`. `debug/` consumes the built `dist/` like an external package.
+This repository is `n8nlift`, a TypeScript CLI published to npm with type declarations. Source lives in `src/`: the `n8nlift` command starts in `src/bin.ts` and the public API is exported through `src/index.ts`. `debug/` consumes the built `dist/` like an external package.
 
 ## Commands
 
@@ -47,7 +47,7 @@ Never hand back a failure: fix it, then run the command again.
 
 ## Boundaries
 
-- `debug/` imports the library only by its package name (`create-typescript-npm-library`, resolved to `file:../dist`). It never imports from `src/`.
+- `debug/` imports the library only by its package name (`n8nlift`, resolved to `file:../dist`). It never imports from `src/`.
 - `src/` never imports from `debug/`.
 
 No check enforces these. `tsconfig.json` excludes `debug/` and ESLint ignores it.

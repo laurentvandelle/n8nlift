@@ -1,3 +1,4 @@
-# create-typescript-npm-library
+# n8nlift
 
-A template for building and publishing a typed TypeScript library to npm. The sample code (`hello`) is a placeholder meant to be replaced, so the template has no business domain of its own yet.
+n8nlift is a command-line tool that builds n8n workflows from typed TypeScript code and tests them like any other code.
+It deploys them to the user's own n8n instance as drafts, and the published version keeps running until the user publishes.
