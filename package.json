@@ -1,10 +1,13 @@
 {
-  "name": "create-typescript-npm-library",
-  "description": "Simple typescript app with vitest to create a npm library with types",
+  "name": "n8nlift",
+  "description": "Write n8n workflows in TypeScript, test them, and lift them from dev to prod. Code is the source. n8n is the runtime.",
   "author": "laurentvandelle",
   "version": "0.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "n8nlift": "dist/bin.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -45,16 +48,16 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/laurentvandelle/create-typescript-npm-library.git"
+    "url": "git+https://github.com/laurentvandelle/n8nlift.git"
   },
   "bugs": {
-    "url": "https://github.com/laurentvandelle/create-typescript-npm-library/issues"
+    "url": "https://github.com/laurentvandelle/n8nlift/issues"
   },
-  "homepage": "https://github.com/laurentvandelle/create-typescript-npm-library#readme",
+  "homepage": "https://github.com/laurentvandelle/n8nlift#readme",
   "keywords": [
-    "npm",
-    "library",
-    "template",
+    "n8n",
+    "cli",
+    "workflow-as-code",
     "typescript"
   ],
   "engines": {
