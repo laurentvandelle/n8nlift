@@ -8,7 +8,7 @@ const noBarrelOrRelative = {
   patterns: [
     {
       group: ['./*', '../*', '../**', './**', '#/*', '#/**'],
-      message: 'No relative import: use the @/ alias (@/functions/…, @/models/…).',
+      message: 'No relative import: use the @/ alias (@/cli/…, @/core/…, @/sdk/…).',
     },
   ],
 };
@@ -23,7 +23,7 @@ export default tseslint.config(
     languageOptions: {
       parserOptions: {
         projectService: { allowDefaultProject: ['vitest.config.mts'] },
-        tsconfigRootDir: import.meta.dirname,
+        tsconfigRootDir: new URL('.', import.meta.url).pathname,
       },
     },
     rules: {
@@ -66,13 +66,16 @@ export default tseslint.config(
         typescript: { alwaysTryTypes: true },
       },
       'boundaries/elements': [
-        { type: 'functions', pattern: 'src/functions', partialMatch: false },
-        { type: 'models', pattern: 'src/models', partialMatch: false },
-        { type: 'libs', pattern: 'src/libs', partialMatch: false },
+        { type: 'cli-command', pattern: 'src/cli/commands/*', capture: ['name'] },
+        { type: 'cli', pattern: 'src/cli' },
+        { type: 'sdk', pattern: 'src/sdk' },
+        { type: 'core', pattern: 'src/core' },
       ],
       'boundaries/files': [
         { category: 'test', pattern: '**/*.test.ts' },
-        { category: 'entry', pattern: 'src/*.ts' },
+        { category: 'cli-model', pattern: 'src/cli/*.model.ts' },
+        { category: 'bin', pattern: 'src/bin.ts' },
+        { category: 'index', pattern: 'src/index.ts' },
       ],
     },
     rules: {
@@ -87,20 +90,40 @@ export default tseslint.config(
             { allow: { to: { module: { origin: ['external', 'core'] } } } },
             // 3. One allow per layer: itself plus the layers it may use.
             {
-              from: { element: { type: 'models' } },
-              allow: { to: { element: { type: 'models' } } },
+              from: { element: { type: 'core' } },
+              allow: { to: { element: { type: 'core' } } },
             },
             {
-              from: { element: { type: 'functions' } },
-              allow: { to: { element: { type: ['functions', 'models'] } } },
+              from: { element: { type: 'sdk' } },
+              allow: { to: { element: { type: ['sdk', 'core'] } } },
             },
             {
-              from: { element: { type: 'libs' } },
-              allow: { to: { element: { type: 'libs' } } },
+              // A command sees only itself, the CLI contracts (cli/*.model.ts), core and sdk. Never another command.
+              from: { element: { type: 'cli-command' } },
+              allow: { to: { element: { type: ['core', 'sdk'] } } },
             },
             {
-              from: { file: { categories: 'entry' } },
-              allow: { to: { element: { type: ['functions', 'models', 'libs'] } } },
+              from: { element: { type: 'cli-command' } },
+              allow: { to: { file: { categories: 'cli-model' } } },
+            },
+            {
+              from: { element: { type: 'cli-command' } },
+              allow: {
+                to: { element: { type: 'cli-command', captured: { name: '{{ from.element.captured.name }}' } } },
+              },
+            },
+            {
+              from: { element: { type: 'cli' } },
+              allow: { to: { element: { type: ['cli', 'cli-command', 'core', 'sdk'] } } },
+            },
+            // 4. Entry points: bin runs the CLI, index exposes the SDK only.
+            {
+              from: { file: { categories: 'bin' } },
+              allow: { to: { element: { type: 'cli' } } },
+            },
+            {
+              from: { file: { categories: 'index' } },
+              allow: { to: { element: { type: 'sdk' } } },
             },
             // 5. Test runner: nobody, then tests.
             {

@@ -27,8 +27,9 @@ Requires Node.js 24 or later.
 > To be confirmed once the commands are migrated.
 
 ```sh
-n8nlift --help     # list the available commands
-n8nlift --version  # print the installed version
+n8nlift --help            # list the available commands
+n8nlift help <command>    # show the options of one command
+n8nlift --version         # print the installed version
 ```
 
 ## Status

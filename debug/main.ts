@@ -1,4 +1,5 @@
-import { runCli } from 'n8nlift';
+import { execFileSync } from 'node:child_process';
+import { join } from 'node:path';
 
-const result = runCli(['--help'], '0.0.0');
-process.stdout.write(result.stdout);
+const bin = join(import.meta.dirname, '..', 'dist', 'bin.js');
+execFileSync(process.execPath, [bin, '--help'], { stdio: 'inherit' });
