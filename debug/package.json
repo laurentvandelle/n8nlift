@@ -1,0 +1,10 @@
+{
+  "name": "debug",
+  "scripts": {
+    "start": "node main.ts"
+  },
+  "dependencies": {
+    "create-typescript-npm-library": "file:../dist"
+  },
+  "type": "module"
+}
