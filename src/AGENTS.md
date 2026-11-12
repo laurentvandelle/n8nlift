@@ -15,7 +15,7 @@
 
 - `bin.ts` is the executable: it builds the `CommandContext` and hands `process.argv` to `runCli`.
 - `index.ts` is the package entry point. It stays empty until the package needs a user-facing type.
-- Imports across folders use the `@/` alias (`@/cli/cli.model`). Relative imports fail lint. `tsc-alias` rewrites the alias at build time; `vitest.config.mts` resolves it in tests.
+- Imports across folders use the `#src/` alias (`#src/cli/cli.model`). Relative imports fail lint. Node resolves the alias at runtime through `package.json` `imports` (`#src/*` → `./dist/*.js`). `tsconfig.json` `paths` maps it to `src/` for type-checking and lint, and `vitest.config.mts` maps it in tests. The alias must start with `#`: Node rejects other prefixes such as `@/`.
 - Type files are named `*.model.ts` and hold types only.
 - Exported functions declare their return type (`@typescript-eslint/explicit-function-return-type`).
 

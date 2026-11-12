@@ -2,7 +2,7 @@
 
 ## Prohibitions
 
-- A command never imports another command. It may import its own folder, `@/cli/*.model.ts` and `core/`. Lint enforces this.
+- A command never imports another command. It may import its own folder, `#src/cli/*.model.ts` and `core/`. Lint enforces this.
 - A command does no I/O of its own: no `process`, no `console`, no direct network or file access. It returns a `CliResult`; `bin.ts` writes it. Anything a command needs from the outside world is a field of `CommandContext`, added by the first command that needs it.
 
 ## Shape

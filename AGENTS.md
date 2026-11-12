@@ -12,7 +12,7 @@ Local setup: see `README.md`. Package manager: npm (`package-lock.json`).
 
 | Task                                            | Command                |
 | ----------------------------------------------- | ---------------------- |
-| Build (`tsc` + `tsc-alias` into `dist/`)        | `npm run build`        |
+| Build (`tsc` into `dist/`)                       | `npm run build`        |
 | Build, then run `debug/main.ts` against `dist/` | `npm start`            |
 | Run tests (Vitest)                              | `npm run test`         |
 | Tests in watch mode                             | `npm run test:watch`   |
