@@ -3,3 +3,5 @@ import { join } from 'node:path';
 
 const bin = join(import.meta.dirname, '..', 'dist', 'bin.js');
 execFileSync(process.execPath, [bin, '--help'], { stdio: 'inherit' });
+console.log('--------------------------------');
+execFileSync(process.execPath, [bin, 'ping'], { stdio: 'inherit' });
