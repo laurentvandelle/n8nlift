@@ -29,6 +29,7 @@ Requires Node.js 22.18 or later, and n8n 2.35.0 or later.
 ```sh
 n8nlift --help            # list the available commands
 n8nlift ping              # check the connection to your n8n instance
+n8nlift deploy            # deliver ./workflows to your instance as drafts
 n8nlift help <command>    # show the options of one command
 n8nlift --version         # print the installed version
 ```
@@ -69,6 +70,39 @@ Add the script to your project's `package.json`, then run `npm run ping`:
 | 4         | The API key is rejected                                |
 
 > Requires n8n 2.35.0 or later. `ping` cannot check this: the n8n API doesn't expose its version.
+
+## Deploy
+
+`n8nlift deploy` delivers every workflow under `./workflows` to your instance. It reads the same `N8N_URL` and `N8N_API_KEY` as `ping`.
+
+```text
+workflows/
+  invoice-sync.workflow.ts   # export default <workflow pasted from an n8n export>
+  crm/crm-import.json        # a workflow exported from n8n
+```
+
+The file name without `.workflow.ts` / `.json` is the workflow's **stable name**: 1 to 16 lowercase letters, digits or dashes, unique across all folders. n8nlift tags the workflow `n8nlift:<stable-name>` on the instance and finds it again by that tag, so renaming the workflow in n8n keeps the link (the name in the file wins on the next update); renaming the file makes a new workflow.
+
+```text
+n8nlift deploy → https://your-n8n.example.com
++ created  invoice-sync   workflows/invoice-sync.workflow.ts
+~ updated  crm-import     workflows/crm/crm-import.json (draft; published version still running)
+= skipped  daily-report   unchanged
+1 created, 1 updated, 1 skipped. Drafts are not live until you publish them.
+```
+
+- New workflows are created and never published.
+- Changed workflows are updated as drafts: the published version keeps running until you publish in n8n.
+- Workflows whose current draft already matches the file are skipped, so a rerun changes nothing.
+- `--json` prints the same report as JSON, for scripts and AI agents.
+- The first failed call stops the run, names the workflow and the call, and exits non-zero.
+
+| Exit code | Meaning                                                                                      |
+| --------- | -------------------------------------------------------------------------------------------- |
+| 0         | Every workflow delivered, or nothing to deploy                                               |
+| 1         | Usage error, missing configuration, invalid workflow files, or a duplicate `n8nlift:` tag    |
+| 3         | The instance cannot be reached or its API returned an error                                  |
+| 4         | The API key is rejected                                                                      |
 
 ## Status
 
