@@ -8,7 +8,7 @@ const noBarrelOrRelative = {
   patterns: [
     {
       group: ['./*', '../*', '../**', './**', '#/*', '#/**'],
-      message: 'No relative import: use the @/ alias (@/cli/…, @/core/…, @/sdk/…).',
+      message: 'No relative import: use the @/ alias (@/cli/…, @/core/…).',
     },
   ],
 };
@@ -68,7 +68,8 @@ export default tseslint.config(
       'boundaries/elements': [
         { type: 'cli-command', pattern: 'src/cli/commands/*', capture: ['name'] },
         { type: 'cli', pattern: 'src/cli' },
-        { type: 'sdk', pattern: 'src/sdk' },
+        { type: 'compile', pattern: 'src/core/compile' },
+        { type: 'deliver', pattern: 'src/core/deliver' },
         { type: 'core', pattern: 'src/core' },
       ],
       'boundaries/files': [
@@ -89,18 +90,24 @@ export default tseslint.config(
             // 1. npm packages and Node core: allowed unless a later policy says otherwise.
             { allow: { to: { module: { origin: ['external', 'core'] } } } },
             // 3. One allow per layer: itself plus the layers it may use.
+            // core/compile turns workflow code into n8n JSON. core/deliver pushes it to n8n and may read
+            // what compile produces. Other core/ folders are shared helpers that know neither stage.
             {
               from: { element: { type: 'core' } },
               allow: { to: { element: { type: 'core' } } },
             },
             {
-              from: { element: { type: 'sdk' } },
-              allow: { to: { element: { type: ['sdk', 'core'] } } },
+              from: { element: { type: 'compile' } },
+              allow: { to: { element: { type: ['compile', 'core'] } } },
             },
             {
-              // A command sees only itself, the CLI contracts (cli/*.model.ts), core and sdk. Never another command.
+              from: { element: { type: 'deliver' } },
+              allow: { to: { element: { type: ['deliver', 'compile', 'core'] } } },
+            },
+            {
+              // A command sees only itself, the CLI contracts (cli/*.model.ts) and core. Never another command.
               from: { element: { type: 'cli-command' } },
-              allow: { to: { element: { type: ['core', 'sdk'] } } },
+              allow: { to: { element: { type: ['compile', 'deliver', 'core'] } } },
             },
             {
               from: { element: { type: 'cli-command' } },
@@ -114,16 +121,12 @@ export default tseslint.config(
             },
             {
               from: { element: { type: 'cli' } },
-              allow: { to: { element: { type: ['cli', 'cli-command', 'core', 'sdk'] } } },
+              allow: { to: { element: { type: ['cli', 'cli-command', 'compile', 'deliver', 'core'] } } },
             },
-            // 4. Entry points: bin runs the CLI, index exposes the SDK only.
+            // 4. Entry points: bin runs the CLI. index (the package entry) exports nothing yet, so no policy.
             {
               from: { file: { categories: 'bin' } },
               allow: { to: { element: { type: 'cli' } } },
-            },
-            {
-              from: { file: { categories: 'index' } },
-              allow: { to: { element: { type: 'sdk' } } },
             },
             // 5. Test runner: nobody, then tests.
             {
