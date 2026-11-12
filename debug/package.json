@@ -1,7 +1,9 @@
 {
   "name": "debug",
   "scripts": {
-    "start": "node main.ts"
+    "start": "node main.ts",
+    "deploy": "node ../dist/bin.js deploy",
+    "deploy:json": "node ../dist/bin.js deploy --json"
   },
   "dependencies": {
     "n8nlift": "file:../dist"

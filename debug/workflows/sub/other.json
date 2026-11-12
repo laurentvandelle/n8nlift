@@ -1,0 +1,27 @@
+{
+  "name": "n8nlift other",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": { "interval": [{ "field": "hours", "hoursInterval": 1 }] }
+      },
+      "id": "5b9e0d7c-2a41-4c6f-8e3d-7f1a2b3c4d01",
+      "name": "Every hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {},
+      "id": "5b9e0d7c-2a41-4c6f-8e3d-7f1a2b3c4d02",
+      "name": "Do nothing",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [220, 0]
+    }
+  ],
+  "connections": {
+    "Every hour": { "main": [[{ "node": "Do nothing", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}
