@@ -2,14 +2,19 @@
 
 ## Prohibitions
 
-- `core/` imports only from `core/`, npm packages and Node core. Never from `cli/` or `sdk/`. Lint enforces this.
-- Nothing in `core/` is exported from `src/index.ts`. The SDK re-exports what users need.
+- `core/` never imports from `cli/`. Lint enforces this.
+- `compile/` imports only `compile/` and shared `core/` folders. It never imports `deliver/`.
+- `deliver/` may import `compile/` (to read what it produces) and shared `core/` folders.
+- A shared `core/` folder (for example `config/`) imports neither `compile/` nor `deliver/`.
 
 ## Shape
 
-- One folder per concern, for example `core/n8n-api/` or `core/config/`, each with its code, its tests and its `*.model.ts`.
-- Empty for now (`.gitkeep`). The first command or SDK feature that needs shared logic creates the first folder.
+- `compile/` turns workflow code into n8n workflow JSON. No network.
+- `deliver/` sends compiled workflows to the user's n8n instance, through the n8n public API, as drafts.
+- Shared concerns get their own folder next to them (`core/config/`, …), created by the first code that needs them.
+- Each folder holds its code, its tests and its `*.model.ts`. `compile/` and `deliver/` are empty for now (`.gitkeep`).
 
 ## Tests
 
 - Tests sit next to the code as `*.test.ts`, like the rest of `src/`.
+- `deliver/` tests use a fake n8n client, never a real instance.
