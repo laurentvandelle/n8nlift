@@ -8,7 +8,7 @@ const HTTPS_CONFIG: ConnectionConfig = {
   apiKey: { value: 'secret', source: 'env' },
 };
 
-interface FakeClient extends N8nClient {
+interface FakeClient extends Pick<N8nClient, 'checkHealth' | 'checkApiKey'> {
   calls: string[];
 }
 

@@ -25,5 +25,6 @@ export interface ConnectionReport {
 export interface CheckConnectionInput {
   nodeVersion: string;
   config: ConnectionConfig;
-  client: N8nClient;
+  /** Only the two read-only probes: `ping` never writes. */
+  client: Pick<N8nClient, 'checkHealth' | 'checkApiKey'>;
 }

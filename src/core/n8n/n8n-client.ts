@@ -1,37 +1,133 @@
-import { N8nClient, N8nClientOptions, ProbeResult } from '#src/core/n8n/n8n.model';
+import {
+  ApiResult,
+  N8nClient,
+  N8nClientOptions,
+  N8nTag,
+  N8nWorkflow,
+  N8nWorkflowSummary,
+  ProbeResult,
+} from '#src/core/n8n/n8n.model';
 
 export const HEALTH_PATH = '/healthz';
 export const API_KEY_PATH = '/api/v1/workflows?limit=1';
 
+const API = '/api/v1';
+const PAGE_LIMIT = 250;
 const DEFAULT_TIMEOUT_MS = 10_000;
 
-/** A minimal, read-only client for the n8n instance. */
+type Method = 'GET' | 'POST' | 'PUT';
+
+interface Page<T> {
+  data: T[];
+  nextCursor?: string | null;
+}
+
+/** A minimal client for the n8n instance and its public API. */
 export function createN8nClient({
   baseUrl,
   apiKey,
   fetch,
   timeoutMs = DEFAULT_TIMEOUT_MS,
 }: N8nClientOptions): N8nClient {
-  const probe = async (path: string, headers: Record<string, string>): Promise<ProbeResult> => {
+  const request = async <T>(
+    method: Method,
+    path: string,
+    { body, auth = true }: { body?: unknown; auth?: boolean } = {},
+  ): Promise<ApiResult<T>> => {
+    const call = `${method} ${path.split('?')[0]}`;
     try {
       const response = await fetch(`${baseUrl}${path}`, {
-        method: 'GET',
-        headers: { accept: 'application/json', ...headers },
+        method,
+        headers: {
+          accept: 'application/json',
+          ...(auth ? { 'X-N8N-API-KEY': apiKey } : {}),
+          ...(body === undefined ? {} : { 'content-type': 'application/json' }),
+        },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
         signal: AbortSignal.timeout(timeoutMs),
       });
+      const text = await response.text();
       if (response.ok) {
-        return { kind: 'ok', status: response.status };
+        return { kind: 'ok', status: response.status, body: parseJson(text) as T };
       }
-      return { kind: 'http-error', status: response.status };
+      const message = errorMessage(text);
+      return { kind: 'http-error', call, status: response.status, ...(message === undefined ? {} : { message }) };
     } catch (error) {
-      return { kind: 'unreachable', reason: describeNetworkError(error, timeoutMs) };
+      return { kind: 'unreachable', call, reason: describeNetworkError(error, timeoutMs) };
     }
   };
 
-  return {
-    checkHealth: () => probe(HEALTH_PATH, {}),
-    checkApiKey: () => probe(API_KEY_PATH, { 'X-N8N-API-KEY': apiKey }),
+  const probe = async (path: string, auth: boolean): Promise<ProbeResult> => {
+    const result = await request<unknown>('GET', path, { auth });
+    switch (result.kind) {
+    case 'ok':
+      return { kind: 'ok', status: result.status };
+    case 'http-error':
+      return { kind: 'http-error', status: result.status };
+    case 'unreachable':
+      return { kind: 'unreachable', reason: result.reason };
+    }
   };
+
+  const listAll = async <T>(path: string): Promise<ApiResult<T[]>> => {
+    const items: T[] = [];
+    let cursor: string | undefined;
+    let status: number;
+    do {
+      const separator = path.includes('?') ? '&' : '?';
+      const page = await request<Page<T>>(
+        'GET',
+        `${path}${separator}limit=${PAGE_LIMIT}${cursor === undefined ? '' : `&cursor=${encodeURIComponent(cursor)}`}`,
+      );
+      if (page.kind !== 'ok') {
+        return page;
+      }
+      status = page.status;
+      items.push(...(page.body.data ?? []));
+      cursor = page.body.nextCursor ?? undefined;
+    } while (cursor !== undefined && cursor !== '');
+    return { kind: 'ok', status, body: items };
+  };
+
+  const workflowPath = (id: string): string => `${API}/workflows/${encodeURIComponent(id)}`;
+
+  return {
+    checkHealth: () => probe(HEALTH_PATH, false),
+    checkApiKey: () => probe(API_KEY_PATH, true),
+    listWorkflows: async (): Promise<ApiResult<N8nWorkflowSummary[]>> => {
+      const result = await listAll<N8nWorkflowSummary>(`${API}/workflows?excludePinnedData=true`);
+      return result.kind === 'ok'
+        ? { ...result, body: result.body.map(({ id, name, tags }) => ({ id, name, tags: tags ?? [] })) }
+        : result;
+    },
+    getWorkflow: (id) => request<N8nWorkflow>('GET', workflowPath(id)),
+    createWorkflow: (body) => request<N8nWorkflow>('POST', `${API}/workflows`, { body }),
+    updateWorkflow: (id, body) => request<N8nWorkflow>('PUT', `${workflowPath(id)}?publishIfActive=false`, { body }),
+    listTags: () => listAll<N8nTag>(`${API}/tags`),
+    createTag: (name) => request<N8nTag>('POST', `${API}/tags`, { body: { name } }),
+    setWorkflowTags: (id, tagIds) =>
+      request<N8nTag[]>('PUT', `${workflowPath(id)}/tags`, { body: tagIds.map((tagId) => ({ id: tagId })) }),
+  };
+}
+
+function parseJson(text: string): unknown {
+  if (text === '') {
+    return undefined;
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+/** The `message` field of an n8n error body, when there is one. */
+function errorMessage(text: string): string | undefined {
+  const body = parseJson(text);
+  if (typeof body === 'object' && body !== null && 'message' in body && typeof body.message === 'string') {
+    return body.message;
+  }
+  return undefined;
 }
 
 function describeNetworkError(error: unknown, timeoutMs: number): string {
