@@ -25,7 +25,10 @@ export async function runCli(args: string[], ctx: CommandContext): Promise<CliRe
 async function runCommand(command: CommandDefinition, args: string[], ctx: CommandContext): Promise<CliResult> {
   try {
     const options = Object.fromEntries(
-      Object.entries(command.options).map(([name, { type, short }]) => [name, { type, short }]),
+      Object.entries(command.options).map(([name, { type, short }]) => [
+        name,
+        short === undefined ? { type } : { type, short },
+      ]),
     );
     const { values, positionals } = parseArgs({
       args,
