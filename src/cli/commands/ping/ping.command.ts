@@ -1,16 +1,10 @@
 import { CliResult, CommandDefinition } from '#src/cli/cli.model';
-import { ConfigKey, ConnectionConfig } from '#src/core/config/config.model';
+import { ConnectionConfig } from '#src/core/config/config.model';
 import { resolveConnectionConfig } from '#src/core/config/connection-config';
+import { EXIT_MISSING_CONFIG, describeMissingConfig } from '#src/core/config/missing-config';
 import { CHECK_LABELS, checkConnection } from '#src/core/connection/check-connection';
 import { Check, ConnectionReport } from '#src/core/connection/connection.model';
 import { createN8nClient } from '#src/core/n8n/n8n-client';
-
-const EXIT_MISSING_CONFIG = 1;
-
-const EXAMPLE_LINES: Record<ConfigKey, string> = {
-  N8N_URL: 'N8N_URL=https://your-n8n.example.com',
-  N8N_API_KEY: 'N8N_API_KEY=your-n8n-api-key',
-};
 
 const STATUS_MARKS: Record<Check['status'], string> = { ok: '✓', failed: '✗', skipped: '–' };
 
@@ -37,7 +31,7 @@ export const pingCommand: CommandDefinition = {
   run: async (_input, ctx) => {
     const resolved = resolveConnectionConfig(ctx.env, ctx.dotEnv);
     if (!resolved.ok) {
-      return missingConfig(resolved.missing);
+      return { exitCode: EXIT_MISSING_CONFIG, stdout: '', stderr: describeMissingConfig(resolved.missing) };
     }
     const { config } = resolved;
     const client = createN8nClient({ baseUrl: config.url.value, apiKey: config.apiKey.value, fetch: ctx.fetch });
@@ -45,15 +39,6 @@ export const pingCommand: CommandDefinition = {
     return render(config, report);
   },
 };
-
-function missingConfig(missing: ConfigKey[]): CliResult {
-  const lines = missing.map((key) => `  ${EXAMPLE_LINES[key]}`).join('\n');
-  return {
-    exitCode: EXIT_MISSING_CONFIG,
-    stdout: '',
-    stderr: `Missing ${missing.join(' and ')}.\nAdd ${missing.length === 1 ? 'this line' : 'these lines'} to .env, or set ${missing.length === 1 ? 'it' : 'them'} in your environment:\n${lines}\n`,
-  };
-}
 
 function render(config: ConnectionConfig, report: ConnectionReport): CliResult {
   const header = [
