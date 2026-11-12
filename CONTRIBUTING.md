@@ -12,7 +12,7 @@ Issues labelled [`good first issue`](https://github.com/laurentvandelle/n8nlift/
 
 ## Setup
 
-Requires Node.js 24 or later (see `.nvmrc`).
+Requires Node.js 22.18 or later. Development uses the version in `.nvmrc` (24).
 
 ```sh
 git clone https://github.com/laurentvandelle/n8nlift.git

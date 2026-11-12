@@ -3,7 +3,7 @@
 ## Prohibitions
 
 - A command never imports another command. It may import its own folder, `#src/cli/*.model.ts` and `core/`. Lint enforces this.
-- A command does no I/O of its own: no `process`, no `console`, no direct network or file access. It returns a `CliResult`; `bin.ts` writes it. Anything a command needs from the outside world is a field of `CommandContext`, added by the first command that needs it.
+- A command does no I/O of its own: no `process`, no `console`, no direct network or file access. `run` returns a `Promise<CliResult>`; `bin.ts` writes it. Anything a command needs from the outside world is a field of `CommandContext`, added by the first command that needs it. It carries `env`, `dotEnv` (the raw text of `./.env`), `nodeVersion` and `fetch` today.
 
 ## Shape
 
@@ -15,7 +15,7 @@
 
 ## Tests
 
-- Call `<name>Command.run(input, ctx)` directly with a hand-built context. Use fakes, not `vi.mock`.
+- Await `<name>Command.run(input, ctx)` directly with a context from `fakeContext()` (`cli/cli.fake.ts`). Use fakes, not `vi.mock`. A fake `fetch` stands in for the network.
 - Dispatch behavior is tested in `run-cli.test.ts`, with a fake command when the real ones do not cover the case.
 
 ## Example
