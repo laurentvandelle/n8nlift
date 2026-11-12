@@ -12,16 +12,22 @@ concurrency:
 
 jobs:
   verify:
-    name: Lint, typecheck, test and build
+    name: Lint, typecheck, test and build (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The minimum in package.json engines, and the development version from .nvmrc.
+        node-version: ['22.18', '.nvmrc']
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js from .nvmrc with npm cache
+      - name: Set up Node.js ${{ matrix.node-version }} with npm cache
         uses: actions/setup-node@v4
         with:
-          node-version-file: .nvmrc
+          node-version: ${{ matrix.node-version != '.nvmrc' && matrix.node-version || '' }}
+          node-version-file: ${{ matrix.node-version == '.nvmrc' && '.nvmrc' || '' }}
           cache: npm
 
       - name: Install dependencies from package-lock.json

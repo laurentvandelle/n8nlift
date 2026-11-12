@@ -2,3 +2,4 @@ node_modules
 dist
 junit.xml
 .DS_Store
+.env

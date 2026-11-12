@@ -75,6 +75,7 @@ export default tseslint.config(
       'boundaries/files': [
         { category: 'test', pattern: '**/*.test.ts' },
         { category: 'cli-model', pattern: 'src/cli/*.model.ts' },
+        { category: 'cli-fake', pattern: 'src/cli/*.fake.ts' },
         { category: 'bin', pattern: 'src/bin.ts' },
         { category: 'index', pattern: 'src/index.ts' },
       ],
@@ -136,6 +137,11 @@ export default tseslint.config(
             {
               from: { file: { categories: 'test' } },
               allow: { to: { module: { source: 'vitest' } } },
+            },
+            // Test fakes shared by CLI tests (cli/*.fake.ts): tests only.
+            {
+              from: { file: { categories: 'test' } },
+              allow: { to: { file: { categories: 'cli-fake' } } },
             },
           ],
         },

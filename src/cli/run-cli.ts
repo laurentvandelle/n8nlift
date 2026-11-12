@@ -9,7 +9,7 @@ const GLOBAL_ALIASES: Record<string, string> = {
   '--version': 'version',
 };
 
-export function runCli(args: string[], ctx: CommandContext): CliResult {
+export async function runCli(args: string[], ctx: CommandContext): Promise<CliResult> {
   const [first = '--help', ...rest] = args;
   const name = GLOBAL_ALIASES[first] ?? first;
   if (name.startsWith('-')) {
@@ -22,7 +22,7 @@ export function runCli(args: string[], ctx: CommandContext): CliResult {
   return runCommand(command, rest, ctx);
 }
 
-function runCommand(command: CommandDefinition, args: string[], ctx: CommandContext): CliResult {
+async function runCommand(command: CommandDefinition, args: string[], ctx: CommandContext): Promise<CliResult> {
   try {
     const options = Object.fromEntries(
       Object.entries(command.options).map(([name, { type, short }]) => [name, { type, short }]),
@@ -36,7 +36,7 @@ function runCommand(command: CommandDefinition, args: string[], ctx: CommandCont
     if (values.help === true) {
       return { exitCode: 0, stdout: renderCommandHelp(command), stderr: '' };
     }
-    return command.run({ positionals, values }, ctx);
+    return await command.run({ positionals, values }, ctx);
   } catch (error) {
     return failure(error instanceof Error ? error.message : String(error), renderCommandHelp(command));
   }

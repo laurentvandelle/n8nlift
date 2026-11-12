@@ -6,5 +6,5 @@ export const versionCommand: CommandDefinition = {
   usage: 'n8nlift version',
   allowPositionals: false,
   options: {},
-  run: (_input, ctx) => ({ exitCode: 0, stdout: `${ctx.version}\n`, stderr: '' }),
+  run: (_input, ctx) => Promise.resolve({ exitCode: 0, stdout: `${ctx.version}\n`, stderr: '' }),
 };
