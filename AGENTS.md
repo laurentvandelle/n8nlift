@@ -4,7 +4,7 @@ Instructions for every coding agent. Humans read `README.md` and `ARCHITECTURE.m
 
 ## Role
 
-This repository is `n8nlift`, a TypeScript CLI published to npm with type declarations. Source lives in `src/`: the `n8nlift` command starts in `src/bin.ts` and the public API (the SDK) is exported through `src/index.ts`. `debug/` runs the built `dist/bin.js` like an external user.
+This repository is `n8nlift`, a TypeScript CLI published to npm that compiles workflows and delivers them to n8n. Source lives in `src/`: the `n8nlift` command starts in `src/bin.ts`; `src/index.ts` is the package entry point and exports nothing yet. `debug/` runs the built `dist/bin.js` like an external user.
 
 ## Commands
 
