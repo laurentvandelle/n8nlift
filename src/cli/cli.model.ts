@@ -1,3 +1,7 @@
+import { WorkflowFile } from '#src/core/compile/workflow.model';
+
+export type { WorkflowFile };
+
 export interface CliResult {
   exitCode: number;
   stdout: string;
@@ -23,6 +27,12 @@ export interface CommandContext {
   dotEnv: string | undefined;
   nodeVersion: string;
   fetch: typeof fetch;
+  /**
+   * Reads every `*.workflow.ts` and `*.json` file under `dir`, recursively. Paths are relative to the
+   * current folder. Resolves `[]` when `dir` does not exist. A file that cannot be parsed or imported
+   * comes back with an `error` instead of `content`.
+   */
+  loadWorkflowFiles(dir: string): Promise<WorkflowFile[]>;
 }
 
 export interface CommandDefinition {

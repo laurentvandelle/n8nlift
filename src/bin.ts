@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { readdir, readFile } from 'node:fs/promises';
+import { join, relative, resolve, sep } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { WorkflowFile } from '#src/cli/cli.model';
 import { COMMANDS } from '#src/cli/registry';
 import { runCli } from '#src/cli/run-cli';
 
@@ -13,6 +16,7 @@ async function main(): Promise<void> {
     dotEnv: readDotEnv(join(process.cwd(), '.env')),
     nodeVersion: process.versions.node,
     fetch: globalThis.fetch,
+    loadWorkflowFiles,
   });
 
   process.stdout.write(result.stdout);
@@ -28,6 +32,39 @@ function readDotEnv(path: string): string | undefined {
       return undefined;
     }
     throw error;
+  }
+}
+
+/** Reads every `*.workflow.ts` and `*.json` file under `dir`, recursively, sorted by path. */
+async function loadWorkflowFiles(dir: string): Promise<WorkflowFile[]> {
+  let entries: string[];
+  try {
+    entries = await readdir(dir, { recursive: true });
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return [];
+    }
+    throw error;
+  }
+  const files = entries
+    .filter((entry) => entry.endsWith('.workflow.ts') || entry.endsWith('.json'))
+    .filter((entry) => !entry.split(sep).includes('node_modules'))
+    .map((entry) => resolve(dir, entry))
+    .sort();
+  return Promise.all(files.map(readWorkflowFile));
+}
+
+async function readWorkflowFile(absolute: string): Promise<WorkflowFile> {
+  const path = relative(process.cwd(), absolute).split(sep).join('/');
+  try {
+    if (absolute.endsWith('.json')) {
+      return { path, content: JSON.parse(await readFile(absolute, 'utf8')) as unknown };
+    }
+    // Node 22.18 and later strip TypeScript types natively, so a .workflow.ts file imports as is.
+    const module = (await import(pathToFileURL(absolute).href)) as { default?: unknown };
+    return { path, content: module.default };
+  } catch (error) {
+    return { path, error: error instanceof Error ? error.message : String(error) };
   }
 }
 

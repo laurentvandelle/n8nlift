@@ -10,8 +10,12 @@ const echoCommand: CommandDefinition = {
   summary: 'Echo the parsed input',
   usage: 'n8nlift echo [options]',
   allowPositionals: false,
-  options: { name: { type: 'string', short: 'n', description: 'Name to echo' } },
-  run: ({ values }) => Promise.resolve({ exitCode: 0, stdout: `${String(values.name)}\n`, stderr: '' }),
+  options: {
+    name: { type: 'string', short: 'n', description: 'Name to echo' },
+    loud: { type: 'boolean', description: 'Shout' },
+  },
+  run: ({ values }) =>
+    Promise.resolve({ exitCode: 0, stdout: `${String(values.name)}${values.loud === true ? '!' : ''}\n`, stderr: '' }),
 };
 
 const ctx: CommandContext = fakeContext({ version: '1.2.3', registry: [helpCommand, versionCommand, echoCommand] });
@@ -71,6 +75,17 @@ describe('runCli', () => {
 
     // Then
     expect(result).toEqual({ exitCode: 0, stdout: 'lift\n', stderr: '' });
+  });
+
+  test('Should parse an option that has no short alias', async () => {
+    // Given
+    const args = ['echo', '--name', 'lift', '--loud'];
+
+    // When
+    const result = await runCli(args, ctx);
+
+    // Then
+    expect(result).toEqual({ exitCode: 0, stdout: 'lift!\n', stderr: '' });
   });
 
   test('Should print the global help and fail when the command is unknown', async () => {

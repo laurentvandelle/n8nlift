@@ -2,6 +2,9 @@ name: Verify 🔍
 
 on:
   pull_request:
+    # Not on `opened`: /LV:to-pr-local opens the pull request on a plan-only commit.
+    # Verify runs once code is pushed (`synchronize`) or the pull request is reopened.
+    types: [synchronize, reopened]
 
 permissions:
   contents: read

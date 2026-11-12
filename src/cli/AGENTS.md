@@ -3,7 +3,7 @@
 ## Prohibitions
 
 - A command never imports another command. It may import its own folder, `#src/cli/*.model.ts` and `core/`. Lint enforces this.
-- A command does no I/O of its own: no `process`, no `console`, no direct network or file access. `run` returns a `Promise<CliResult>`; `bin.ts` writes it. Anything a command needs from the outside world is a field of `CommandContext`, added by the first command that needs it. It carries `env`, `dotEnv` (the raw text of `./.env`), `nodeVersion` and `fetch` today.
+- A command does no I/O of its own: no `process`, no `console`, no direct network or file access. `run` returns a `Promise<CliResult>`; `bin.ts` writes it. Anything a command needs from the outside world is a field of `CommandContext`, added by the first command that needs it. It carries `env`, `dotEnv` (the raw text of `./.env`), `nodeVersion`, `fetch` and `loadWorkflowFiles` (the `*.workflow.ts` and `*.json` files under a folder) today.
 
 ## Shape
 
