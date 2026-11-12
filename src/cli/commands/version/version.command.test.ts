@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { versionCommand } from '@/cli/commands/version/version.command';
+import { versionCommand } from '#src/cli/commands/version/version.command';
 
 describe('versionCommand', () => {
   test('Should print the version from the context', () => {

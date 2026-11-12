@@ -20,7 +20,7 @@
     "declaration": true,
     "types": ["node"],
     "paths": {
-      "@/*": ["./src/*"]
+      "#src/*": ["./src/*"]
     }
   },
   "include": ["src"],

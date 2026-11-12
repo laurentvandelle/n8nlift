@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
-import { CliResult, CommandContext, CommandDefinition } from '@/cli/cli.model';
-import { renderCommandHelp, renderGlobalHelp } from '@/cli/commands/help/help.command';
+import { CliResult, CommandContext, CommandDefinition } from '#src/cli/cli.model';
+import { renderCommandHelp, renderGlobalHelp } from '#src/cli/commands/help/help.command';
 
 const GLOBAL_ALIASES: Record<string, string> = {
   '-h': 'help',

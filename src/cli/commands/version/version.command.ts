@@ -1,4 +1,4 @@
-import { CommandDefinition } from '@/cli/cli.model';
+import { CommandDefinition } from '#src/cli/cli.model';
 
 export const versionCommand: CommandDefinition = {
   name: 'version',

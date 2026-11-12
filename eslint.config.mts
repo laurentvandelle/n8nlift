@@ -8,7 +8,7 @@ const noBarrelOrRelative = {
   patterns: [
     {
       group: ['./*', '../*', '../**', './**', '#/*', '#/**'],
-      message: 'No relative import: use the @/ alias (@/cli/…, @/core/…).',
+      message: 'No relative import: use the #src/ alias (#src/cli/…, #src/core/…).',
     },
   ],
 };

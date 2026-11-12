@@ -1,4 +1,4 @@
-import { CommandDefinition, CommandOption } from '@/cli/cli.model';
+import { CommandDefinition, CommandOption } from '#src/cli/cli.model';
 
 const HELP_OPTION: CommandOption = { type: 'boolean', short: 'h', description: 'Show this help' };
 const VERSION_OPTION: CommandOption = { type: 'boolean', short: 'v', description: 'Print the n8nlift version' };

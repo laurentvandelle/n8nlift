@@ -15,6 +15,9 @@
     },
     "./package.json": "./package.json"
   },
+  "imports": {
+    "#src/*": "./dist/*.js"
+  },
   "files": [
     "dist"
   ],
@@ -22,7 +25,7 @@
   "scripts": {
     "start": "npm run build && npm run start:prod",
     "start:prod": "cd debug && npm run start",
-    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json",
     "lint": "eslint --flag unstable_native_nodejs_ts_config src --fix",
     "lint:check": "eslint --flag unstable_native_nodejs_ts_config src",
     "test": "vitest run",
@@ -40,7 +43,6 @@
     "eslint": "^10.14.0",
     "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-boundaries": "^7.4.2",
-    "tsc-alias": "^1.8.10",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.72.2",
     "vitest": "^4.1.12"

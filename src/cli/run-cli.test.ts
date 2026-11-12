@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import { CommandContext, CommandDefinition } from '@/cli/cli.model';
-import { helpCommand, renderCommandHelp, renderGlobalHelp } from '@/cli/commands/help/help.command';
-import { versionCommand } from '@/cli/commands/version/version.command';
-import { runCli } from '@/cli/run-cli';
+import { CommandContext, CommandDefinition } from '#src/cli/cli.model';
+import { helpCommand, renderCommandHelp, renderGlobalHelp } from '#src/cli/commands/help/help.command';
+import { versionCommand } from '#src/cli/commands/version/version.command';
+import { runCli } from '#src/cli/run-cli';
 
 const echoCommand: CommandDefinition = {
   name: 'echo',

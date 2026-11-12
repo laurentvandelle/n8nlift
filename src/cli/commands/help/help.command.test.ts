@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { CommandContext, CommandDefinition } from '@/cli/cli.model';
-import { helpCommand, renderCommandHelp, renderGlobalHelp } from '@/cli/commands/help/help.command';
+import { CommandContext, CommandDefinition } from '#src/cli/cli.model';
+import { helpCommand, renderCommandHelp, renderGlobalHelp } from '#src/cli/commands/help/help.command';
 
 const fakeCommand: CommandDefinition = {
   name: 'fake',
