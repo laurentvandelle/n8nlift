@@ -1,4 +1,4 @@
-import { CommandDefinition, CommandOption } from '#src/cli/cli.model';
+import { CliResult, CommandDefinition, CommandOption } from '#src/cli/cli.model';
 
 const HELP_OPTION: CommandOption = { type: 'boolean', short: 'h', description: 'Show this help' };
 const VERSION_OPTION: CommandOption = { type: 'boolean', short: 'v', description: 'Print the n8nlift version' };
@@ -9,18 +9,20 @@ export const helpCommand: CommandDefinition = {
   usage: 'n8nlift help [command]',
   allowPositionals: true,
   options: {},
-  run: ({ positionals }, ctx) => {
-    const [target] = positionals;
-    if (target === undefined) {
-      return { exitCode: 0, stdout: renderGlobalHelp(ctx.registry), stderr: '' };
-    }
-    const command = ctx.registry.find((candidate) => candidate.name === target);
-    if (command === undefined) {
-      return { exitCode: 1, stdout: '', stderr: `Unknown command: ${target}\n\n${renderGlobalHelp(ctx.registry)}` };
-    }
-    return { exitCode: 0, stdout: renderCommandHelp(command), stderr: '' };
-  },
+  run: ({ positionals }, ctx) => Promise.resolve(renderHelp(positionals, ctx.registry)),
 };
+
+function renderHelp(positionals: string[], registry: readonly CommandDefinition[]): CliResult {
+  const [target] = positionals;
+  if (target === undefined) {
+    return { exitCode: 0, stdout: renderGlobalHelp(registry), stderr: '' };
+  }
+  const command = registry.find((candidate) => candidate.name === target);
+  if (command === undefined) {
+    return { exitCode: 1, stdout: '', stderr: `Unknown command: ${target}\n\n${renderGlobalHelp(registry)}` };
+  }
+  return { exitCode: 0, stdout: renderCommandHelp(command), stderr: '' };
+}
 
 export function renderGlobalHelp(registry: readonly CommandDefinition[]): string {
   const commands = table(registry.map((command) => [command.name, command.summary]));
