@@ -13,7 +13,8 @@ export function stableNameOf(path: string): string {
 
 /**
  * Turns the files found under `./workflows` into local workflows. Pure, no I/O.
- * Any problem (invalid or duplicate stable name, unreadable file, missing field) fails the whole load,
+ * Any problem (invalid or duplicate stable name, unreadable file, missing field, invalid node, duplicate node
+ * name, connection to a node that does not exist) fails the whole load,
  * so nothing is sent while one file is wrong.
  */
 export function loadWorkflows(files: WorkflowFile[]): LoadResult {
@@ -72,6 +73,10 @@ function toWorkflow(stableName: string, path: string, content: unknown): LocalWo
   if (missing.length > 0) {
     return `missing or invalid ${missing.join(', ')}`;
   }
+  const graphProblems = checkGraph(content.nodes as unknown[], content.connections as Record<string, unknown>);
+  if (graphProblems.length > 0) {
+    return graphProblems.join('; ');
+  }
   return {
     stableName,
     path,
@@ -80,6 +85,74 @@ function toWorkflow(stableName: string, path: string, content: unknown): LocalWo
     connections: content.connections as Record<string, unknown>,
     settings: (content.settings as Record<string, unknown> | undefined) ?? {},
   };
+}
+
+/** What is wrong with the nodes and connections, one clause each: node fields, duplicate names, dangling edges. */
+function checkGraph(nodes: unknown[], connections: Record<string, unknown>): string[] {
+  const problems: string[] = [];
+  const names = new Set<string>();
+  const reported = new Set<string>();
+
+  nodes.forEach((node, index) => {
+    if (!isRecord(node)) {
+      problems.push(`node at index ${index} must be an object`);
+      return;
+    }
+    const hasName = typeof node.name === 'string' && node.name.trim() !== '';
+    const missing: string[] = [];
+    if (!hasName) missing.push('name (a non-empty string)');
+    if (typeof node.type !== 'string') missing.push('type (a string)');
+    if (typeof node.typeVersion !== 'number') missing.push('typeVersion (a number)');
+    if (!isPosition(node.position)) missing.push('position (two numbers)');
+    if (!isRecord(node.parameters)) missing.push('parameters (an object)');
+    if (missing.length > 0) {
+      const label = hasName ? `node "${node.name as string}"` : `node at index ${index}`;
+      problems.push(`${label} has a missing or invalid ${missing.join(', ')}`);
+    }
+    if (!hasName) return;
+    const name = node.name as string;
+    if (names.has(name)) {
+      if (!reported.has(name)) problems.push(`node name "${name}" is used twice`);
+      reported.add(name);
+    }
+    names.add(name);
+  });
+
+  for (const [source, outputs] of Object.entries(connections)) {
+    if (!names.has(source)) {
+      problems.push(`connection from "${source}": no node named "${source}"`);
+    }
+    for (const target of connectionTargets(outputs)) {
+      if (target === undefined) {
+        problems.push(`connection from "${source}" must map each output type to lists of { node, type, index }`);
+      } else if (!names.has(target)) {
+        problems.push(`connection from "${source}" to "${target}": no node named "${target}"`);
+      }
+    }
+  }
+  return problems;
+}
+
+/** Every target node name under one source of `connections`; `undefined` once for a malformed entry. */
+function connectionTargets(outputs: unknown): (string | undefined)[] {
+  if (!isRecord(outputs)) return [undefined];
+  const targets: string[] = [];
+  for (const lists of Object.values(outputs)) {
+    if (!Array.isArray(lists)) return [undefined];
+    for (const list of lists as unknown[]) {
+      if (list === null) continue;
+      if (!Array.isArray(list)) return [undefined];
+      for (const edge of list as unknown[]) {
+        if (!isRecord(edge) || typeof edge.node !== 'string') return [undefined];
+        targets.push(edge.node);
+      }
+    }
+  }
+  return targets;
+}
+
+function isPosition(value: unknown): boolean {
+  return Array.isArray(value) && value.length === 2 && value.every((item) => typeof item === 'number');
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

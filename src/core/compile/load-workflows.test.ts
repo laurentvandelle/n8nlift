@@ -120,4 +120,97 @@ describe('loadWorkflows', () => {
     // Then
     expect(result).toMatchObject({ ok: false, problems: [{ kind: 'invalid-shape' }] });
   });
+
+  test('Should accept a full n8n export unchanged, unknown keys included', () => {
+    // Given
+    const nodes = [
+      { parameters: {}, id: 'n1', name: 'Start', type: 'n8n-nodes-base.manualTrigger', typeVersion: 1, position: [0, 0] },
+      { parameters: {}, id: 'n2', name: 'Done', type: 'n8n-nodes-base.noOp', typeVersion: 1, position: [220, 0], disabled: true },
+    ];
+    const connections = { Start: { main: [[{ node: 'Done', type: 'main', index: 0 }], null] } };
+    const content = { name: 'Full', nodes, connections, id: 'wf1', meta: { instanceId: 'x' }, pinData: {}, versionId: 'v1' };
+    const files: WorkflowFile[] = [{ path: 'workflows/full.json', content }];
+
+    // When
+    const result = loadWorkflows(files);
+
+    // Then
+    expect(result).toEqual({
+      ok: true,
+      workflows: [{ stableName: 'full', path: 'workflows/full.json', name: 'Full', nodes, connections, settings: {} }],
+    });
+  });
+
+  test('Should name each node with a missing or invalid field, by name or else by index', () => {
+    // Given
+    const nodes = [
+      { name: 'Start', type: 'n8n-nodes-base.manualTrigger', position: [0], parameters: {} },
+      { type: 'n8n-nodes-base.noOp', typeVersion: 1, position: [0, 0], parameters: {} },
+      'not a node',
+    ];
+    const files: WorkflowFile[] = [{ path: 'workflows/nodes.json', content: { ...EXPORT, nodes } }];
+
+    // When
+    const result = loadWorkflows(files);
+
+    // Then
+    expect(result).toEqual({
+      ok: false,
+      problems: [
+        {
+          kind: 'invalid-shape',
+          path: 'workflows/nodes.json',
+          detail:
+            'node "Start" has a missing or invalid typeVersion (a number), position (two numbers); ' +
+            'node at index 1 has a missing or invalid name (a non-empty string); ' +
+            'node at index 2 must be an object',
+        },
+      ],
+    });
+  });
+
+  test('Should reject a node name used twice, once', () => {
+    // Given
+    const node = { name: 'Start', type: 'n8n-nodes-base.manualTrigger', typeVersion: 1, position: [0, 0], parameters: {} };
+    const files: WorkflowFile[] = [{ path: 'workflows/twice.json', content: { ...EXPORT, nodes: [node, node, node] } }];
+
+    // When
+    const result = loadWorkflows(files);
+
+    // Then
+    expect(result).toEqual({
+      ok: false,
+      problems: [{ kind: 'invalid-shape', path: 'workflows/twice.json', detail: 'node name "Start" is used twice' }],
+    });
+  });
+
+  test('Should reject a connection from or to a node that does not exist, and a malformed one', () => {
+    // Given
+    const node = { name: 'Start', type: 'n8n-nodes-base.manualTrigger', typeVersion: 1, position: [0, 0], parameters: {} };
+    const connections = {
+      Start: { main: [[{ node: 'Missing', type: 'main', index: 0 }]] },
+      Ghost: { main: [[{ node: 'Start', type: 'main', index: 0 }]] },
+      Broken: 'nope',
+    };
+    const files: WorkflowFile[] = [{ path: 'workflows/edges.workflow.ts', content: { ...EXPORT, nodes: [node], connections } }];
+
+    // When
+    const result = loadWorkflows(files);
+
+    // Then
+    expect(result).toEqual({
+      ok: false,
+      problems: [
+        {
+          kind: 'invalid-shape',
+          path: 'workflows/edges.workflow.ts',
+          detail:
+            'connection from "Start" to "Missing": no node named "Missing"; ' +
+            'connection from "Ghost": no node named "Ghost"; ' +
+            'connection from "Broken": no node named "Broken"; ' +
+            'connection from "Broken" must map each output type to lists of { node, type, index }',
+        },
+      ],
+    });
+  });
 });
