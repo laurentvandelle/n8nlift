@@ -124,10 +124,15 @@ export default tseslint.config(
               from: { element: { type: 'cli' } },
               allow: { to: { element: { type: ['cli', 'cli-command', 'compile', 'deliver', 'core'] } } },
             },
-            // 4. Entry points: bin runs the CLI. index (the package entry) exports nothing yet, so no policy.
+            // 4. Entry points: bin runs the CLI. index (the package entry) re-exports what workflow files
+            // import from 'n8nlift' (defineWorkflow and the workflow types), all from compile.
             {
               from: { file: { categories: 'bin' } },
               allow: { to: { element: { type: 'cli' } } },
+            },
+            {
+              from: { file: { categories: 'index' } },
+              allow: { to: { element: { type: 'compile' } } },
             },
             // 5. Test runner: nobody, then tests.
             {

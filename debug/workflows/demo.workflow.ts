@@ -1,6 +1,9 @@
-// A workflow pasted from an n8n export (editor → ⋯ → Download), as the default export.
+// A workflow pasted from an n8n export (editor → ⋯ → Download) into defineWorkflow, as the default export.
 // Its stable name is the file name: `demo`. Edit a parameter, then deploy again to get a draft.
-const workflow = {
+// Break a connection target (for example 'Set mesage') and the editor flags it.
+import { defineWorkflow } from 'n8nlift';
+
+export default defineWorkflow({
   name: 'n8nlift demo',
   nodes: [
     {
@@ -33,6 +36,4 @@ const workflow = {
     },
   },
   settings: { executionOrder: 'v1' },
-};
-
-export default workflow;
+});

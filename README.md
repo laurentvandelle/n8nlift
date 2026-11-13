@@ -4,11 +4,11 @@
 
 Write n8n workflows in TypeScript, test them like any other code, and lift them from dev to prod.
 
-n8nlift is a command-line tool for people who want their n8n workflows to live in Git, not only in the editor. You build workflows from typed node factories and reusable blocks, run unit tests, then deploy to your n8n instance. Updates land as drafts, so the published version keeps running until you choose to publish.
+n8nlift is a command-line tool for people who want their n8n workflows to live in Git, not only in the editor. You paste an n8n export into a typed `.workflow.ts` file, let the editor catch a broken shape, run unit tests, then deploy to your n8n instance. Updates land as drafts, so the published version keeps running until you choose to publish.
 
 ## Why n8nlift
 
-- **Typed building blocks.** One factory per node and reusable subgraphs, no raw JSON pasted by hand.
+- **Typed workflow files.** Paste an n8n export into `defineWorkflow`: the editor flags a missing node field, a connection to a node that does not exist, or a node name used twice, before anything is deployed.
 - **Tested before shipped.** Workflows are plain TypeScript: lint, typecheck and test them in CI.
 - **Safe delivery.** Deploy as draft, review, then publish. Requires n8n 2.35.0 or later.
 - **Built for AI coding agents.** Agents edit code and run the CLI instead of calling the n8n API directly.
@@ -21,6 +21,12 @@ npm install -g n8nlift
 ```
 
 Requires Node.js 22.18 or later, and n8n 2.35.0 or later.
+
+In a project whose workflows are `.workflow.ts` files, also install it as a dev dependency, so the files can import `defineWorkflow`:
+
+```sh
+npm install --save-dev n8nlift
+```
 
 ## Quick start
 
@@ -71,6 +77,32 @@ Add the script to your project's `package.json`, then run `npm run ping`:
 
 > Requires n8n 2.35.0 or later. `ping` cannot check this: the n8n API doesn't expose its version.
 
+## Write a workflow
+
+Export a workflow from n8n (editor → ⋯ → Download), then paste the JSON into `defineWorkflow` in a `.workflow.ts` file under `./workflows`:
+
+```ts
+// workflows/invoice-sync.workflow.ts
+import { defineWorkflow } from 'n8nlift';
+
+export default defineWorkflow({
+  name: 'Invoice sync',
+  nodes: [
+    { parameters: {}, name: 'Start', type: 'n8n-nodes-base.manualTrigger', typeVersion: 1, position: [0, 0] },
+    { parameters: {}, name: 'Done', type: 'n8n-nodes-base.noOp', typeVersion: 1, position: [220, 0] },
+  ],
+  connections: { Start: { main: [[{ node: 'Done', type: 'main', index: 0 }]] } },
+});
+```
+
+`defineWorkflow` returns the export unchanged. Your editor (TypeScript 5.4 or later) flags:
+
+- a node missing `name`, `type`, `typeVersion`, `position` (two numbers) or `parameters`;
+- a connection from or to a node name that is not in `nodes`;
+- a node name used twice.
+
+Other keys of the export (`id`, `meta`, `pinData`, `versionId`, `credentials`…) are accepted as they are. `Workflow`, `WorkflowNode` and `WorkflowConnection` are exported for your own code.
+
 ## Deploy
 
 `n8nlift deploy` delivers every workflow under `./workflows` to your instance. It reads the same `N8N_URL` and `N8N_API_KEY` as `ping`.
@@ -80,6 +112,8 @@ workflows/
   invoice-sync.workflow.ts   # export default <workflow pasted from an n8n export>
   crm/crm-import.json        # a workflow exported from n8n
 ```
+
+Before anything is sent, `deploy` checks every file, `.workflow.ts` and `.json` alike, with the same rules as the editor: the workflow has a `name`, `nodes` and `connections`; every node has `name`, `type`, `typeVersion`, `position` and `parameters`; node names are unique; every connection goes from and to an existing node. One wrong file refuses the whole run, names the file and what is wrong, and exits 1.
 
 The file name without `.workflow.ts` / `.json` is the workflow's **stable name**: 1 to 16 lowercase letters, digits or dashes, unique across all folders. n8nlift tags the workflow `n8nlift:<stable-name>` on the instance and finds it again by that tag, so renaming the workflow in n8n keeps the link (the name in the file wins on the next update); renaming the file makes a new workflow.
 
