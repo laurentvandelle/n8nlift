@@ -53,3 +53,7 @@ It deploys them to the user's own n8n instance as drafts, and the published vers
 - **Credential key**: the name of one credential in a credential list: the kebab-case slug of its n8n name, with `-2`, `-3`… when names collide, in the order of the n8n ids. Unique within a list.
 - **Credential marker**: what `credential('key')` stores in a node, under the type of the key, in place of the n8n `{ id, name }`. `deploy` resolves it to the `{ id, name }` of the key in the credential list of the target it deploys to, under the type of that list, after checking the id on the instance.
 - **Missing credential**: a key that the workflows of a target use and that the target does not provide: its credential list does not have it, or, for `deploy`, the instance no longer has its id or has it under another type.
+
+### Project setup
+
+- **Agent kit**: the skills and agent instructions that `lift init` writes into a project: `AGENTS.md` and its routed docs, and the `BOILERLIFT:` skills under `.claude/skills/`, which take a workflow request from interview to a deployed draft. _Avoid_: AI kit, Boilerlift skill.

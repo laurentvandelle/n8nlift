@@ -6,8 +6,10 @@
     "lib": ["ES2024"],
     "strict": true,
     "noEmit": true,
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["boilerlift.config.ts", "workflows/**/*.ts", "credentials/*.ts"]
+  "include": ["boilerlift.config.ts", "workflows/**/*.ts", "code/**/*.ts", "credentials/*.ts"]
 }
