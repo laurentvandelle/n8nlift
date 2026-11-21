@@ -309,14 +309,31 @@ describe('nodeContext loadProjectTemplate', () => {
     const template = await nodeContext(cwd).loadProjectTemplate();
 
     expect(template.map((file) => file.path)).toEqual([
+      '.claude/skills/BOILERLIFT:interviewing/SKILL.md',
+      '.claude/skills/BOILERLIFT:plan/SKILL.md',
+      '.claude/skills/BOILERLIFT:qa/SKILL.md',
+      '.claude/skills/BOILERLIFT:ship/SKILL.md',
       '.env.example',
+      '.github/copilot-instructions.md',
       'AGENTS.md',
+      'ARCHITECTURE.md',
       'CLAUDE.md',
+      'GLOSSARY.md',
       'README.md',
       '_gitignore',
       'boilerlift.config.ts',
+      'code/AGENTS.md',
+      'code/hello.test.ts',
+      'code/hello.ts',
+      'docs/adr/README.md',
+      'docs/agents.md',
+      'docs/guardrails.md',
+      'docs/maintenance.md',
+      'docs/testing.md',
+      'eslint.config.mjs',
       'package.json',
       'tsconfig.json',
+      'workflows/AGENTS.md',
       'workflows/hello.workflow.ts',
     ]);
   });
