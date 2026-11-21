@@ -1,17 +1,29 @@
 # AGENTS.md
 
-Instructions for AI agents working in this project. It holds n8n workflows as code, delivered to n8n with Boilerlift (the `lift` command).
+Instructions for AI agents working in this project. It holds n8n workflows as code, delivered to n8n with Boilerlift (the `lift` command). Humans read `README.md` and `ARCHITECTURE.md`.
+
+## Role
+
+This project holds n8n workflows as typed files and delivers them to n8n instances with `lift`. Your job is to write and change those workflow files, check them, and deliver them as drafts.
 
 ## Project
 
 - `boilerlift.config.ts`: the targets. Each one has an n8n `url`, an `apiKey` read from the environment, and a `workflows` folder. The variables of `./.env` are loaded first.
+- `code/`: the JavaScript of Code nodes, one tested function per file. A workflow imports it through `#code/<name>`.
 - `workflows/`: one workflow per file, `<name>.workflow.ts` (a `defineWorkflow({...})` default export) or `<name>.json` (an n8n export). The file name is the workflow's stable name: 1 to 64 lowercase letters, digits or dashes.
 - `boilerlift.lock.json`: written by `lift deploy`, it links each stable name to its n8n id. Never edit it by hand.
 - Never write a secret in a file. `.env` holds the URL and the API key and is never committed; `.env.example` lists the variables, with empty values.
 
 ## Commands
 
-Run every command with `--json`: the result is one JSON object on stdout. Read its `exitCode` first, then the rest. A project with several targets takes `--target <name>` (or `-t <name>`), or `--all`.
+| Command | What it does |
+| --- | --- |
+| `npm run verify` | Lint (imports and boundaries), type-check, then the tests of `code/` |
+| `npm run lint` | ESLint only |
+| `npm run typecheck` | `tsc --noEmit` only |
+| `npm test` | Vitest only |
+
+Run every `lift` command with `--json`: the result is one JSON object on stdout. Read its `exitCode` first, then the rest. A project with several targets takes `--target <name>` (or `-t <name>`), or `--all`.
 
 | Command | What it does | You may run it |
 | --- | --- | --- |
@@ -47,3 +59,35 @@ Never run `lift publish` or a real `lift clean` on your own initiative, even wit
 ## Details
 
 `npx lift help <command>` prints the options and exit codes of one command. Each command is documented on GitHub: `https://github.com/laurentvandelle/boilerlift/blob/main/docs/commands/<name>.md`, where `<name>` is `ping`, `status`, `deploy`, `publish`, `clean`, `creds` or `init`.
+
+## Skills
+
+To create or change a workflow, follow `.claude/skills/BOILERLIFT:ship/SKILL.md` (`/BOILERLIFT:ship <what the workflow should do>` in Claude Code): interview, decision summary, one Build go-ahead, files, checks, draft deploy, QA, then publish on a separate yes. It uses `BOILERLIFT:interviewing`, `BOILERLIFT:plan` and `BOILERLIFT:qa`, in the same folder. An agent that does not load `.claude/skills` reads these files directly.
+
+## Routing
+
+- Before editing `code/**`, read `code/AGENTS.md`.
+- Before editing `workflows/**`, read `workflows/AGENTS.md`.
+- Before adding a dependency or crossing a module boundary, read `ARCHITECTURE.md`.
+- Before naming a domain concept, read `GLOSSARY.md`.
+- Before writing or changing a test, read `docs/testing.md`.
+- Before writing an architecture decision, read `docs/adr/README.md`.
+- Before changing these instruction files, read `docs/agents.md`.
+- Before treating a convention as enforced, read `docs/guardrails.md`.
+- Before adding a convention after review, read `docs/maintenance.md`.
+
+## Non-negotiables
+
+1. The `AGENTS.md` closest to the file being changed wins over the root file.
+2. The code is the source of truth. When a document and the code disagree, report the gap. Do not invent a reconciliation in the same task.
+3. A rule lives in one file. Local rules live in the nearest `AGENTS.md`. The root file keeps shared rules only.
+
+## Definition of done
+
+Run `npm run verify`, then `npx lift deploy --dry-run --json`, before handing work back.
+Never hand back a failure: fix it, then run the command again.
+
+## Maintenance
+
+Instruction files are code and drift without upkeep.
+Before adding or changing a rule after review, read `docs/maintenance.md`.
