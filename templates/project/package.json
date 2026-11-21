@@ -1,7 +1,14 @@
 {
   "private": true,
   "type": "module",
+  "imports": {
+    "#code/*": "./code/*.ts"
+  },
   "scripts": {
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "verify": "npm run lint && npm run typecheck && npm test",
     "ping": "lift ping",
     "check": "lift deploy --dry-run",
     "deploy": "lift deploy",
@@ -11,7 +18,14 @@
     "clean": "lift clean"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/node": "^24.0.0",
-    "boilerlift": "^{{boilerliftVersion}}"
+    "boilerlift": "^{{boilerliftVersion}}",
+    "eslint": "^10.14.0",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-boundaries": "^7.4.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.2",
+    "vitest": "^4.1.12"
   }
 }
